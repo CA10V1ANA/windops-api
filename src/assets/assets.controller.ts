@@ -38,6 +38,11 @@ export class AssetsController {
     return this.assetsService.findAll();
   }
 
+  @Get('summary/fleet')
+  getFleetSummary() {
+    return this.assetsService.getFleetSummary();
+  }
+
   @ApiTags('assets')
   @Get(':id')
   @ApiOperation({
@@ -83,14 +88,18 @@ O campo \`windSpeedMs\` é opcional (painéis solares não possuem vento).`,
   @ApiBody({ type: CreateTelemetryDto })
   @ApiResponse({
     status: 201,
-    description: 'Telemetria registrada. O campo `severity` indica o resultado da classificação.',
+    description: 'Telemetria registrada. Retorna o registro salvo e informações sobre criação de alerta.',
     schema: {
       example: {
-        powerMw: 2.5,
-        temperatureC: 80,
-        windSpeedMs: 10.2,
-        timestamp: '2026-09-13T12:00:00.000Z',
-        severity: 'WARNING',
+        telemetry: {
+          assetId: 'WT-001',
+          powerMw: 2.5,
+          temperatureC: 80,
+          windSpeedMs: 10.2,
+          timestamp: '2026-09-13T12:00:00.000Z',
+        },
+        classification: 'WARNING',
+        alertCreated: true,
       },
     },
   })
@@ -176,5 +185,25 @@ O campo \`windSpeedMs\` é opcional (painéis solares não possuem vento).`,
   @ApiResponse({ status: 404, description: 'Asset não encontrado.' })
   getSummary(@Param('id') id: string) {
     return this.assetsService.getSummary(id);
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Alertas (Asset)
+  // ──────────────────────────────────────────────────────────
+
+  @ApiTags('alerts')
+  @Get(':id/alerts')
+  @ApiOperation({
+    summary: 'Listar alertas do ativo',
+    description: 'Retorna os alertas gerados para o ativo específico.',
+  })
+  @ApiParam({ name: 'id', description: 'ID do ativo', example: 'WT-001' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de alertas do ativo retornada.',
+  })
+  @ApiResponse({ status: 404, description: 'Asset não encontrado.' })
+  getAlerts(@Param('id') id: string) {
+    return this.assetsService.findAlertsByAssetId(id);
   }
 }

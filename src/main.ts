@@ -6,6 +6,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ──────────────────────────────────────────────────────────
+  // Segurança: Habilitando CORS
+  // ──────────────────────────────────────────────────────────
+  // Permitimos que APENAS o nosso frontend (porta 4200) faça requisições.
+  app.enableCors({
+    origin: 'http://localhost:4200',
+  });
+
+
   // Segurança da porta: rejeita dados inválidos antes da regra de negócio
   app.useGlobalPipes(new ValidationPipe());
 

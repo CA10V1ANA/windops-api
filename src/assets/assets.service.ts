@@ -70,7 +70,14 @@ export class AssetsService {
       });
     }
 
-    return { ...telemetry, severity };
+    return {
+      telemetry: {
+        assetId: id,
+        ...telemetry,
+      },
+      classification: severity,
+      alertCreated: severity !== 'NORMAL',
+    };
   }
 
   getTelemetry(id: string) {
@@ -83,6 +90,11 @@ export class AssetsService {
   // ──────────────────────────────────────────────────────────
   findAllAlerts() {
     return this.alerts;
+  }
+
+  findAlertsByAssetId(id: string) {
+    this.findOne(id);
+    return this.alerts.filter(a => a.assetId === id);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -115,6 +127,37 @@ export class AssetsService {
       maxTemperatureC,
       warningAlerts: assetAlerts.filter(a => a.severity === 'WARNING').length,
       criticalAlerts: assetAlerts.filter(a => a.severity === 'CRITICAL').length,
+    };
+  }
+
+  getFleetSummary() {
+    let totalPowerMw = 0;
+    const assetsCount = this.assets.length;
+    
+    // Calcula distribuição de status
+    const statusDistribution = {
+      online: this.assets.filter(a => a.status === 'ONLINE').length,
+      attention: this.assets.filter(a => a.status === 'ATTENTION').length,
+      critical: this.assets.filter(a => a.status === 'CRITICAL').length,
+      offline: this.assets.filter(a => a.status === 'OFFLINE').length,
+    };
+
+    // Soma a potência baseada na última leitura de cada ativo
+    this.assets.forEach(asset => {
+      const readings = this.telemetryData[asset.id] || [];
+      if (readings.length > 0) {
+        totalPowerMw += readings[readings.length - 1].powerMw;
+      }
+    });
+
+    const activeAlertsCount = this.alerts.length;
+
+    return {
+      totalAssets: assetsCount,
+      statusDistribution,
+      totalPowerMw: Math.round(totalPowerMw * 100) / 100,
+      activeAlertsCount,
+      recentAlerts: [...this.alerts].reverse().slice(0, 3) // Últimos 3 alertas
     };
   }
 }
