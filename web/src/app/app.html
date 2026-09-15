@@ -1,0 +1,47 @@
+<div class="layout">
+  
+  <!-- Sidebar Fixa -->
+  <aside class="sidebar">
+    <div class="sidebar-header">WINDOPS</div>
+    <ul class="nav-links">
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a></li>
+      <li><a routerLink="/assets" routerLinkActive="active">Ativos</a></li>
+      <li><a routerLink="/alerts" routerLinkActive="active">Alertas</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    
+    <!-- Operational Rail (Faixa Permanente) -->
+    <div class="operational-rail">
+      <div class="rail-item">PRODUÇÃO</div>
+      <div class="rail-item">•</div>
+      <div class="rail-item">
+        API 
+        <span class="rail-dot" [ngClass]="{
+          'online': apiState() === 'success',
+          'error': apiState() === 'error'
+        }"></span>
+        {{ apiState() === 'success' ? 'ONLINE' : 'ERRO' }}
+      </div>
+      <div class="rail-item">•</div>
+      <div class="rail-item">{{ assetsCount() }} ATIVOS</div>
+      <div class="rail-item" style="margin-left: auto;">
+        <button class="theme-toggle" (click)="toggleTheme()">
+          @if (isDarkTheme()) {
+            <span>☀️ Claro</span>
+          } @else {
+            <span>🌙 Escuro</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

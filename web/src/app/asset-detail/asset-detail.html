@@ -1,0 +1,244 @@
+<!-- Breadcrumb + Header Compacto (sem Hero, conforme o design do supervisor) -->
+@if (baseState() === 'loading') {
+  <div class="skeleton-line" style="width: 200px; height: 14px; margin-bottom: 16px;"></div>
+  <div class="skeleton-line" style="width: 360px; height: 28px; margin-bottom: 8px;"></div>
+  <div class="skeleton-line" style="width: 240px; height: 16px;"></div>
+} @else if (baseState() === 'error') {
+  <div class="error-state">
+    <p><strong>Unable to load asset</strong></p>
+    <p>The WindOps API could not be reached or asset was not found.</p>
+    <button class="btn-primary" (click)="loadBase()">Retry</button>
+  </div>
+} @else if (asset()) {
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/" class="breadcrumb-link">Assets</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="mono-text">{{ asset()!.id }}</span>
+  </nav>
+
+  <!-- Cabeçalho compacto -->
+  <header class="page-header">
+    <div class="header-main">
+      <div>
+        <h1 class="asset-title">{{ asset()!.name }}</h1>
+        <div class="header-meta">
+          <span class="mono-text">{{ asset()!.id }}</span>
+          <span class="sep">·</span>
+          <span>{{ asset()!.type.replace('_', ' ') }}</span>
+          @if (asset()!.location) {
+            <span class="sep">·</span>
+            <span>{{ asset()!.location }}</span>
+          }
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="status-badge" [ngClass]="asset()!.status.toLowerCase()">
+          <span class="dot"></span>{{ asset()!.status }}
+        </span>
+        <button class="btn-primary" (click)="openDrawer()">Registrar Telemetria</button>
+      </div>
+    </div>
+  </header>
+}
+
+<!-- Tabs de Navegação -->
+<div class="tabs-bar">
+  <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Visão Geral</button>
+  <button class="tab-btn" [class.active]="activeTab() === 'telemetry'" (click)="setTab('telemetry')">Telemetria</button>
+  <button class="tab-btn" [class.active]="activeTab() === 'alerts'" (click)="setTab('alerts')">Alertas
+    @if (alerts().length > 0) {
+      <span class="tab-badge">{{ alerts().length }}</span>
+    }
+  </button>
+</div>
+
+<!-- ===== TAB: OVERVIEW ===== -->
+@if (activeTab() === 'overview') {
+  <div class="tab-content">
+    @if (summaryState() === 'loading') {
+      <div class="skeleton-block"></div>
+    } @else if (summaryState() === 'error') {
+      <div class="error-state">Não foi possível carregar o resumo. <button class="btn-link" (click)="loadSummary()">Tentar Novamente</button></div>
+    } @else if (summary()) {
+      <section class="kv-panel">
+        <div class="kv-row">
+          <span class="kv-label">Leituras de Telemetria</span>
+          <span class="kv-value mono-text">{{ summary()!.samples }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Alertas (Atenção)</span>
+          <span class="kv-value status-badge warning">
+            <span class="dot"></span>{{ summary()!.warningAlerts }}
+          </span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">Alertas (Críticos)</span>
+          <span class="kv-value status-badge critical">
+            <span class="dot"></span>{{ summary()!.criticalAlerts }}
+          </span>
+        </div>
+        @if (summary()!.samples > 0) {
+          <div class="kv-divider"></div>
+          <div class="kv-row">
+            <span class="kv-label">Potência Média</span>
+            <span class="kv-value mono-text">{{ summary()!.averagePowerMw }} MW</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-label">Temperatura Máxima</span>
+            <span class="kv-value mono-text">{{ summary()!.maxTemperatureC }} °C</span>
+          </div>
+        }
+      </section>
+    }
+  </div>
+}
+
+<!-- ===== TAB: TELEMETRY ===== -->
+@if (activeTab() === 'telemetry') {
+  <div class="tab-content">
+    @if (telemetryState() === 'loading') {
+      <div class="skeleton-block"></div>
+    } @else if (telemetryState() === 'error') {
+      <div class="error-state">Não foi possível carregar a telemetria. <button class="btn-link" (click)="loadTelemetry()">Tentar Novamente</button></div>
+    } @else if (telemetry().length === 0) {
+      <div class="empty-state">
+        <p>Nenhum dado de telemetria registrado.</p>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Potência (MW)</th>
+            <th>Vento (m/s)</th>
+            <th>Temp. Nacelle (°C)</th>
+            <th>Classificação</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of telemetry(); track t.timestamp) {
+            <tr>
+              <td class="mono-text">{{ t.timestamp }}</td>
+              <td class="mono-text">{{ t.powerMw }}</td>
+              <td class="mono-text">{{ t.windSpeedMs }}</td>
+              <td class="mono-text">{{ t.nacelleTempC }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="t.classification.toLowerCase()">
+                  <span class="dot"></span>{{ t.classification }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+<!-- ===== TAB: ALERTS ===== -->
+@if (activeTab() === 'alerts') {
+  <div class="tab-content">
+    @if (alertsState() === 'loading') {
+      <div class="skeleton-block"></div>
+    } @else if (alertsState() === 'error') {
+      <div class="error-state">Não foi possível carregar os alertas. <button class="btn-link" (click)="loadAlerts()">Tentar Novamente</button></div>
+    } @else if (alerts().length === 0) {
+      <div class="empty-state">
+        <p>Nenhum alerta operacional para este ativo.</p>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID do Alerta</th>
+            <th>Severidade</th>
+            <th>Tipo</th>
+            <th>Mensagem</th>
+            <th>Horário</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (alert of alerts(); track alert.id) {
+            <tr>
+              <td class="mono-text">{{ alert.id }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="alert.severity.toLowerCase()">
+                  <span class="dot"></span>{{ alert.severity }}
+                </span>
+              </td>
+              <td>{{ alert.type.replace('_', ' ') }}</td>
+              <td>{{ alert.message }}</td>
+              <td class="mono-text">{{ alert.timestamp }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+<!-- ===== DRAWER: REGISTER TELEMETRY ===== -->
+@if (isDrawerOpen()) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+  <div class="drawer">
+    <div class="drawer-header">
+      <h2>Registrar Telemetria</h2>
+      <button class="btn-close" (click)="closeDrawer()" [disabled]="isSubmitting()">✕</button>
+    </div>
+    <div class="drawer-body">
+      
+      @if (submitSuccessMsg()) {
+        <div class="success-banner">
+          {{ submitSuccessMsg() }}
+        </div>
+      }
+
+      @if (submitError()) {
+        <div class="error-banner">
+          {{ submitError() }}
+        </div>
+      }
+
+      <form (ngSubmit)="submitTelemetry()">
+        <div class="form-group">
+          <label>Potência</label>
+          <div class="input-wrapper">
+            <input type="number" step="0.1" [disabled]="isSubmitting()" [(ngModel)]="formData().powerMw" name="power" class="form-control mono-text" placeholder="0.0" required>
+            <span class="unit">MW</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Velocidade do Vento (Opcional)</label>
+          <div class="input-wrapper">
+            <input type="number" step="0.1" [disabled]="isSubmitting()" [(ngModel)]="formData().windSpeedMs" name="windSpeed" class="form-control mono-text" placeholder="0.0">
+            <span class="unit">m/s</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Temperatura da Nacelle</label>
+          <div class="input-wrapper">
+            <input type="number" step="0.1" [disabled]="isSubmitting()" [(ngModel)]="formData().temperatureC" name="temperature" class="form-control mono-text" placeholder="0.0" required>
+            <span class="unit">°C</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Horário</label>
+          <div class="input-wrapper">
+            <input type="text" class="form-control mono-text" value="Gerado automaticamente (Agora)" disabled>
+          </div>
+        </div>
+
+        <div class="drawer-footer">
+          <button type="button" class="btn-secondary" (click)="closeDrawer()" [disabled]="isSubmitting()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Registrando...' : 'Salvar Registro' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
