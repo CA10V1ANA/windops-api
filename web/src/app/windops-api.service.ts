@@ -7,6 +7,7 @@ import { AssetSummary } from './models/asset-summary.model';
 import { CreateTelemetry, TelemetryResponse } from './models/telemetry-payload.model';
 import { Alert } from './models/alert.model';
 import { FleetSummary } from './models/fleet-summary.model';
+import { environment } from '../environments/environment';
 
 export interface HealthResponse {
   status: string;
@@ -17,8 +18,7 @@ export interface HealthResponse {
 })
 export class WindOpsApiService {
   private http = inject(HttpClient);
-  // Como não estamos usando Proxy e habilitamos o CORS, a URL base é absoluta.
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = environment.apiUrl;
 
   checkHealth(): Observable<HealthResponse> {
     return this.http.get<HealthResponse>(`${this.baseUrl}/health`);
