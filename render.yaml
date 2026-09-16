@@ -1,23 +1,27 @@
 services:
-  # 1. NestJS Backend Web Service
   - type: web
     name: windops-api
-    env: node
-    buildCommand: npm install && npm run build
+    runtime: node
+    branch: main
+    plan: free
+    buildCommand: npm ci && npm run build
     startCommand: npm run start:prod
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        # Injetaremos dinamicamente depois de criar o site estático
-        value: "*"
+        fromService:
+          type: web
+          name: windops-web
+          envVarKey: RENDER_EXTERNAL_URL
 
-  # 2. Angular Static Site
   - type: web
     name: windops-web
-    env: static
-    buildCommand: cd web && npm install && npm run build
-    staticPublishPath: web/dist/windops-app/browser
+    runtime: static
+    branch: main
+    buildCommand: cd web && npm ci && npm run build -- --define "WINDOPS_API_URL='${NG_APP_API_URL}'"
+    staticPublishPath: web/dist/web/browser
     envVars:
       - key: NG_APP_API_URL
         fromService:

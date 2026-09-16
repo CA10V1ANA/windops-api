@@ -9,11 +9,14 @@ async function bootstrap() {
   // ──────────────────────────────────────────────────────────
   // Segurança: Habilitando CORS
   // ──────────────────────────────────────────────────────────
-  // Em produção (Render), permitimos a URL injetada via FRONTEND_URL.
-  // Em desenvolvimento, permitimos localhost:4200. Se nada for configurado, libera tudo temporariamente (*).
-  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:4200';
+  // Em produção, o Blueprint injeta a URL pública do frontend.
+  // Localmente, apenas o servidor Angular padrão é permitido.
+  const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:4200')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? allowedOrigin : '*',
+    origin: allowedOrigins,
   });
 
 

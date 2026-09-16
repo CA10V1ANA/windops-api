@@ -27,7 +27,7 @@ describe('AssetsService — Regra de classificação de temperatura', () => {
     });
 
     // Assert
-    expect(result.severity).toBe('NORMAL');
+    expect(result.classification).toBe('NORMAL');
     expect(service.findAllAlerts()).toHaveLength(0);
   });
 
@@ -38,7 +38,7 @@ describe('AssetsService — Regra de classificação de temperatura', () => {
       timestamp: '2026-09-13T13:00:00.000Z',
     });
 
-    expect(result.severity).toBe('WARNING');
+    expect(result.classification).toBe('WARNING');
     expect(service.findAllAlerts()).toHaveLength(1);
     expect(service.findAllAlerts()[0].severity).toBe('WARNING');
   });
@@ -50,7 +50,7 @@ describe('AssetsService — Regra de classificação de temperatura', () => {
       timestamp: '2026-09-13T14:00:00.000Z',
     });
 
-    expect(result.severity).toBe('CRITICAL');
+    expect(result.classification).toBe('CRITICAL');
     expect(service.findAllAlerts()).toHaveLength(1);
     expect(service.findAllAlerts()[0].severity).toBe('CRITICAL');
   });
@@ -61,7 +61,7 @@ describe('AssetsService — Regra de classificação de temperatura', () => {
       temperatureC: 75,
       timestamp: '2026-09-13T15:00:00.000Z',
     });
-    expect(result.severity).toBe('WARNING');
+    expect(result.classification).toBe('WARNING');
   });
 
   it('limite exato de 85°C deve ser CRITICAL', () => {
@@ -70,7 +70,7 @@ describe('AssetsService — Regra de classificação de temperatura', () => {
       temperatureC: 85,
       timestamp: '2026-09-13T16:00:00.000Z',
     });
-    expect(result.severity).toBe('CRITICAL');
+    expect(result.classification).toBe('CRITICAL');
   });
 
   // ──────────────────────────────────────────────────────────
