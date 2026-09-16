@@ -1,29 +1,34 @@
-# ⚡ WindOps API
+# ⚡ WindOps Control Center (Fullstack)
 
-> API de Operação e Alertas para Ativos de Energia Renovável  
-> **Stack:** NestJS · TypeScript · Swagger/OpenAPI  
-> **Projeto pedagógico** — Desafio Individual #3 · Hackathon Proenergia Summit 2026
+> Sistema Completo de Operação e Alertas para Ativos de Energia Renovável  
+> **Stack Backend:** NestJS · TypeScript · Swagger/OpenAPI  
+> **Stack Frontend:** Angular 16+ · Signals · SCSS · Componentes Responsivos  
+> **Projeto pedagógico** — Desafio Individual Fullstack · Hackathon Proenergia Summit 2026
 
 ---
 
 ## 📋 Sobre o projeto
 
-A **WindOps API** centraliza informações operacionais de ativos de geração renovável (aerogeradores e painéis solares). Ela permite:
+O **WindOps Control Center** é a evolução da WindOps API. Ele engloba tanto o motor de regras de negócio (Backend) quanto o painel de operação (Frontend), centralizando informações vitais de ativos de geração renovável (aerogeradores e painéis solares).
 
-- Listar e consultar ativos cadastrados
-- Registrar leituras de telemetria dos sensores
-- Classificar automaticamente a temperatura em **NORMAL**, **WARNING** ou **CRITICAL**
-- Gerar alertas automaticamente quando há risco
-- Consultar resumos operacionais por ativo
+**Funcionalidades:**
+- **Backend (NestJS):**
+  - Registro de telemetria dos sensores e classificação de temperatura (NORMAL, WARNING, CRITICAL)
+  - Geração automática de alertas
+  - Resumo operacional da frota
+- **Frontend (Angular):**
+  - Painel (Dashboard) com contagem de ativos
+  - Inventário responsivo de ativos com badges dinâmicas
+  - Tela de detalhes por ativo consumindo telemetria
+  - Tema Claro e Escuro (Dark Mode) com toggle animado
 
-> **Nota:** Os limites de temperatura são fictícios e usados apenas para fins didáticos.
+> **Nota:** Os limites de temperatura e os dados são fictícios, usados apenas para fins didáticos.
 
 ---
 
 ## 🚀 Como rodar localmente
 
 ### Pré-requisitos
-
 - Node.js v18+
 - npm v9+
 
@@ -33,226 +38,84 @@ A **WindOps API** centraliza informações operacionais de ativos de geração r
 # Clone o repositório
 git clone <url-do-repo>
 cd windops-api
+```
 
+### Rodando o Backend (API)
+Acesse a raiz do projeto para rodar a API NestJS:
+```bash
 # Instale as dependências
 npm install
 
-# Inicie o servidor em modo desenvolvimento (hot reload)
+# Inicie o servidor em modo desenvolvimento
 npm run start:dev
 ```
+A API rodará em **http://localhost:3000** (Documentação Swagger em `/docs`).
 
-O servidor sobe em **http://localhost:3000**
+### Rodando o Frontend (Web)
+Abra um novo terminal e navegue até a pasta `web`:
+```bash
+cd web
+
+# Instale as dependências do Angular
+npm install
+
+# Inicie a aplicação Angular
+npm start
+```
+O Frontend rodará em **http://localhost:4200**.
 
 ---
 
-## 📖 Swagger / Documentação Interativa
+## ☁️ Deploy no Render.com (Infrastructure as Code)
 
-Acesse a documentação completa da API com todos os endpoints, exemplos e campos:
+O projeto está pronto para ser publicado em nuvem de forma gratuita utilizando o Render.com com a estratégia de Infrastructure as Code (arquivo `render.yaml`).
 
-```
-http://localhost:3000/docs
-```
-
-Você pode testar as rotas diretamente pelo navegador, sem precisar de Postman ou curl.
-
----
-
-## 📡 Endpoints do MVP
-
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/health` | Verifica se a API está no ar |
-| `GET` | `/assets` | Lista todos os ativos |
-| `GET` | `/assets/:id` | Busca um ativo por ID (404 se não existir) |
-| `POST` | `/assets/:id/telemetry` | Registra uma leitura de telemetria |
-| `GET` | `/assets/:id/telemetry` | Lista leituras de um ativo |
-| `GET` | `/assets/:id/summary` | Resumo operacional de um ativo |
-| `GET` | `/alerts` | Lista todos os alertas gerados |
-
----
-
-## 🔧 Exemplos de uso
-
-### Verificar saúde da API
-
-```bash
-curl http://localhost:3000/health
-# { "status": "ok" }
-```
-
-### Listar ativos
-
-```bash
-curl http://localhost:3000/assets
-```
-
-### Registrar telemetria (gera alerta WARNING)
-
-```bash
-curl -X POST http://localhost:3000/assets/WT-001/telemetry \
-  -H "Content-Type: application/json" \
-  -d '{
-    "powerMw": 2.5,
-    "temperatureC": 80,
-    "windSpeedMs": 10.2,
-    "timestamp": "2026-09-13T12:00:00.000Z"
-  }'
-```
-
-Resposta:
-```json
-{
-  "powerMw": 2.5,
-  "temperatureC": 80,
-  "windSpeedMs": 10.2,
-  "timestamp": "2026-09-13T12:00:00.000Z",
-  "severity": "WARNING"
-}
-```
-
-### Registrar telemetria inválida (deve retornar 400)
-
-```bash
-curl -X POST http://localhost:3000/assets/WT-001/telemetry \
-  -H "Content-Type: application/json" \
-  -d '{ "powerMw": "muito", "temperatureC": "quente" }'
-# HTTP 400 Bad Request
-```
-
-### Buscar asset inexistente (deve retornar 404)
-
-```bash
-curl http://localhost:3000/assets/FANTASMA-001
-# HTTP 404 Not Found
-```
-
-### Consultar alertas gerados
-
-```bash
-curl http://localhost:3000/alerts
-```
-
-### Consultar resumo de um ativo
-
-```bash
-curl http://localhost:3000/assets/WT-001/summary
-```
-
-Resposta com dados:
-```json
-{
-  "assetId": "WT-001",
-  "samples": 3,
-  "averagePowerMw": 2.5,
-  "maxTemperatureC": 90,
-  "warningAlerts": 1,
-  "criticalAlerts": 1
-}
-```
-
----
-
-## 🧠 Regra de negócio (valores didáticos)
-
-| Temperatura | Classificação | Alerta gerado? |
-|-------------|---------------|---------------|
-| `< 75°C` | `NORMAL` | ❌ Não |
-| `75°C a 84°C` | `WARNING` | ✅ Sim |
-| `>= 85°C` | `CRITICAL` | ✅ Sim |
+1. Conecte este repositório no seu painel do Render (Dashboard > Blueprints).
+2. O Render lerá o arquivo `render.yaml` e provisionará automaticamente dois serviços:
+   - **WindOps API**: Web Service (Node) rodando o backend NestJS.
+   - **WindOps Web**: Static Site rodando a build do Angular.
+3. A URL da API é repassada automaticamente para o Angular através do `environment.prod.ts`.
 
 ---
 
 ## 🏗️ Arquitetura
 
-```
-HTTP Request
-    ↓
-Controller       ← recebe a requisição, delega ao Service
-    ↓
-DTO + ValidationPipe  ← valida o payload (400 se inválido)
-    ↓
-Service          ← regra de negócio, classificação, alertas
-    ↓
-Dados em memória ← arrays (sem banco por ora)
-    ↓
-HTTP Response
-```
-
-### Estrutura de pastas
+O projeto adota uma arquitetura client-server clássica:
 
 ```
-src/
-├── assets/
-│   ├── dto/
-│   │   └── create-telemetry.dto.ts   # Contrato de entrada da telemetria
-│   ├── assets.controller.ts          # Rotas HTTP de assets e telemetria
-│   ├── assets.service.ts             # Regra de negócio, alertas, summary
-│   └── assets.module.ts              # Módulo NestJS
-├── alerts/
-│   ├── alerts.controller.ts          # Rota GET /alerts
-│   └── alerts.module.ts
-├── app.module.ts                     # Módulo raiz
-└── main.ts                           # Ponto de entrada, Swagger, ValidationPipe
+[ Usuário / Navegador ]
+         │
+         ▼ (HTTP)
+[ Frontend Angular ] (Signals, SCSS, RxJS HttpClient)
+         │
+         ▼ (REST API / JSON)
+[ Backend NestJS ] (Controllers, Services, DTOs + Validation)
 ```
 
----
+### Estrutura do Monorepo (Simplificado)
 
-## 🧪 Testes
-
-```bash
-# Executar todos os testes
-npm run test
-
-# Modo watch (re-executa ao salvar)
-npm run test:watch
+```text
+/
+├── render.yaml                 # Receita de Deploy para o Render
+├── src/                        # Código fonte do Backend NestJS
+│   ├── assets/                 # Módulo de Ativos e Telemetria
+│   ├── alerts/                 # Módulo de Alertas
+│   └── main.ts                 # Configuração do CORS e Swagger
+└── web/                        # Código fonte do Frontend Angular
+    ├── src/
+    │   ├── app/                # Componentes (Dashboard, Assets-List, Asset-Detail)
+    │   ├── environments/       # Configuração de URL da API (Dev vs Prod)
+    │   ├── styles.scss         # Variáveis CSS e Design System
+    │   └── index.html          # Favicon de Turbina e Título
+    └── angular.json            # Configuração de Build do Frontend
 ```
-
-Cobertura dos testes:
-- ✅ `70°C → NORMAL`
-- ✅ `80°C → WARNING` + geração de alerta
-- ✅ `90°C → CRITICAL` + geração de alerta
-- ✅ Limites exatos (75°C e 85°C)
-- ✅ Asset inexistente → `NotFoundException`
-- ✅ Summary sem telemetria (retorna `null`)
-- ✅ Summary com dados (média, máximo, contagem de alertas)
-- ✅ `GET /health → { status: "ok" }`
-
----
-
-## 🏗️ Build de produção
-
-```bash
-npm run build
-```
-
----
-
-## 📌 Ativos pré-cadastrados
-
-| ID | Nome | Tipo | Status |
-|----|------|------|--------|
-| `WT-001` | Aerogerador 01 | `WIND_TURBINE` | `ONLINE` |
-| `WT-002` | Aerogerador 02 | `WIND_TURBINE` | `ATTENTION` |
-| `PV-001` | Painel Solar 01 | `SOLAR_ARRAY` | `ONLINE` |
-
----
-
-## 🔮 Próximos passos (fora do MVP)
-
-- [ ] `POST /assets` — Cadastrar novos ativos
-- [ ] `PATCH /assets/:id/status` — Atualizar status
-- [ ] Filtros: `GET /assets?status=ONLINE&type=WIND_TURBINE`
-- [ ] Filtros: `GET /alerts?severity=CRITICAL&assetId=WT-001`
-- [ ] Persistência com **Prisma + PostgreSQL/Neon**
-- [ ] Testes e2e
-- [ ] Logs estruturados
 
 ---
 
 ## 👨‍💻 Desenvolvido com
 
 - [NestJS](https://nestjs.com/) — Framework Node.js progressivo
+- [Angular](https://angular.io/) — SPA Framework (Utilizando Signals)
 - [TypeScript](https://www.typescriptlang.org/) — Tipagem estática
-- [class-validator](https://github.com/typestack/class-validator) — Validação de DTOs
 - [Swagger/OpenAPI](https://swagger.io/) — Documentação automática
-- [Vitest](https://vitest.dev/) — Testes unitários
+- [Render](https://render.com/) — Cloud Hosting
