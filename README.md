@@ -2,7 +2,7 @@
 
 > Sistema Completo de Operação e Alertas para Ativos de Energia Renovável  
 > **Stack Backend:** NestJS · TypeScript · Swagger/OpenAPI  
-> **Stack Frontend:** Angular 16+ · Signals · SCSS · Componentes Responsivos  
+> **Stack Frontend:** Angular 22.1.x · Signals · SCSS · Componentes Responsivos
 > **Projeto pedagógico** — Desafio Individual Fullstack · Hackathon Proenergia Summit 2026
 
 ---
@@ -19,10 +19,11 @@ O **WindOps Control Center** é a evolução da WindOps API. Ele engloba tanto o
 - **Frontend (Angular):**
   - Painel (Dashboard) com contagem de ativos
   - Inventário responsivo de ativos com badges dinâmicas
-  - Tela de detalhes por ativo consumindo telemetria
+  - Tela de detalhes por ativo, com consulta e registro de telemetria
+  - Listagem de alertas e alertas por ativo
   - Tema Claro e Escuro (Dark Mode) com toggle animado
 
-> **Nota:** Os limites de temperatura e os dados são fictícios, usados apenas para fins didáticos.
+> **Nota:** Os limites de temperatura e os dados são fictícios, usados apenas para fins didáticos. A aplicação usa armazenamento em memória: ativos, telemetrias e alertas retornam ao estado inicial quando a API é reiniciada.
 
 ---
 
@@ -105,12 +106,28 @@ O projeto adota uma arquitetura client-server clássica:
 │   └── main.ts                 # Configuração do CORS e Swagger
 └── web/                        # Código fonte do Frontend Angular
     ├── src/
-    │   ├── app/                # Componentes (Dashboard, Assets-List, Asset-Detail)
+    │   ├── app/                # Componentes (Dashboard, Assets-List, Asset-Detail, Alerts)
     │   ├── environments/       # Configuração de URL da API (Dev vs Prod)
     │   ├── styles.scss         # Variáveis CSS e Design System
     │   └── index.html          # Favicon de Turbina e Título
     └── angular.json            # Configuração de Build do Frontend
 ```
+
+### Endpoints principais da API
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| `GET` | `/health` | Verifica a disponibilidade da API |
+| `GET` | `/assets` | Lista os ativos cadastrados |
+| `GET` | `/assets/summary/fleet` | Retorna o resumo operacional da frota |
+| `GET` | `/assets/:id` | Consulta um ativo |
+| `POST` | `/assets/:id/telemetry` | Registra uma leitura de telemetria e pode gerar um alerta |
+| `GET` | `/assets/:id/telemetry` | Lista as leituras de um ativo |
+| `GET` | `/assets/:id/summary` | Retorna o resumo operacional de um ativo |
+| `GET` | `/assets/:id/alerts` | Lista os alertas de um ativo |
+| `GET` | `/alerts` | Lista todos os alertas gerados |
+
+As regras didáticas de temperatura são: abaixo de `75°C`, `NORMAL`; de `75°C` até abaixo de `85°C`, `WARNING`; e a partir de `85°C`, `CRITICAL`.
 
 ---
 
