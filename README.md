@@ -29,8 +29,10 @@ O **WindOps Control Center** é a evolução da WindOps API. Ele engloba tanto o
 ## 🚀 Como rodar localmente
 
 ### Pré-requisitos
-- Node.js v18+
-- npm v9+
+- Node.js v24.15.0
+- npm v11.16.0
+
+As versões oficiais do projeto também estão declaradas em `.node-version` e nos campos `engines`/`packageManager` dos arquivos `package.json`.
 
 ### Instalação
 
